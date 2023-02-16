@@ -355,7 +355,7 @@ void Optimizer::BundleAdjustment(const vector<KeyFrame *> &vpKFs, const vector<M
  *         + measurement：MapPoint在当前帧中的二维位置(ul,v,ur)
  *         + InfoMatrix: invSigma2(与特征点所在的尺度有关)
  *
- * @param   pFrame Frame
+    * @param   pFrame Frame
  * @return  inliers数量
  */
 int Optimizer::PoseOptimization(Frame *pFrame)
@@ -596,6 +596,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
 
     // Recover optimized pose and return number of inliers
     // Step 5 得到优化后的当前帧的位姿
+    //将优化后的位姿重新赋给传入的影像帧Frame，并且返回内点的个数，完成优化
     g2o::VertexSE3Expmap* vSE3_recov = static_cast<g2o::VertexSE3Expmap*>(optimizer.vertex(0));
     g2o::SE3Quat SE3quat_recov = vSE3_recov->estimate();
     cv::Mat pose = Converter::toCvMat(SE3quat_recov);
