@@ -495,8 +495,8 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
     pMP->mbTrackInView = false;
 
     // 3D in absolute coordinates
-    // Step 1 获得这个地图点的世界坐标
-    cv::Mat P = pMP->GetWorldPos(); 
+    //Step 1 获得这个地图点的世界坐标
+    cv::Mat P = pMP->GetWorldPos();
 
     // 3D in camera coordinates
     // 根据当前帧(粗糙)位姿转化到当前相机坐标系下的三维点Pc
@@ -506,12 +506,12 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
     const float &PcZ = Pc.at<float>(2);
 
     // Check positive depth
-    // Step 2 关卡一：将这个地图点变换到当前帧的相机坐标系下，如果深度值为正才能继续下一步。
+    //Step 2 关卡一：将这个地图点变换到当前帧的相机坐标系下，如果深度值为正才能继续下一步。
     if(PcZ<0.0f)
         return false;
 
     // Project in image and check it is not outside
-    // Step 3 关卡二：将地图点投影到当前帧的像素坐标，如果在图像有效范围内才能继续下一步。
+    //Step 3 关卡二：将地图点投影到当前帧的像素坐标，如果在图像有效范围内才能继续下一步。
     const float invz = 1.0f/PcZ;			
     const float u=fx*PcX*invz+cx;			
     const float v=fy*PcY*invz+cy;			
@@ -523,7 +523,7 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
         return false;
 
     // Check distance is in the scale invariance region of the MapPoint
-    // Step 4 关卡三：计算地图点到相机中心的距离，如果在有效距离范围内才能继续下一步。
+    //Step 4 关卡三：计算地图点到相机中心的距离，如果在有效距离范围内才能继续下一步。
      // 得到认为的可靠距离范围:[0.8f*mfMinDistance, 1.2f*mfMaxDistance]
     const float maxDistance = pMP->GetMaxDistanceInvariance();
     const float minDistance = pMP->GetMinDistanceInvariance();
@@ -539,7 +539,7 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
         return false;
 
     // Check viewing angle
-    // Step 5 关卡四：计算当前相机指向地图点向量和地图点的平均观测方向夹角，小于60°才能进入下一步。
+    //Step 5 关卡四：计算当前相机指向地图点向量和地图点的平均观测方向夹角，小于60°才能进入下一步。
     cv::Mat Pn = pMP->GetNormal();
 
 	// 计算当前相机指向地图点向量和地图点的平均观测方向夹角的余弦值，注意平均观测方向为单位向量
@@ -550,10 +550,10 @@ bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
         return false;
 
     // Predict scale in the image
-    // Step 6 根据地图点到光心的距离来预测一个尺度（仿照特征点金字塔层级）
+    //Step 6 根据地图点到光心的距离来预测一个尺度（仿照特征点金字塔层级）
     const int nPredictedLevel = pMP->PredictScale(dist,		//这个点到光心的距离
 												  this);	//给出这个帧
-    // Step 7 记录计算得到的一些参数
+    //Step 7 记录计算得到的一些参数
     // Data used by the tracking	
     // 通过置位标记 MapPoint::mbTrackInView 来表示这个地图点要被投影 
     pMP->mbTrackInView = true;	
