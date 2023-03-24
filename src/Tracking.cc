@@ -984,17 +984,17 @@ void Tracking::CreateInitialMapMonocular()
     KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);  // 第一帧
     KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);  // 第二帧
 
-    // Step 1 将初始关键帧,当前关键帧的描述子转为BoW
+    //Step 1 将初始关键帧,当前关键帧的描述子转为BoW
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
 
     // Insert KFs in the map
-    // Step 2 将关键帧插入到地图
+    //Step 2 将关键帧插入到地图
     mpMap->AddKeyFrame(pKFini);
     mpMap->AddKeyFrame(pKFcur);
 
     // Create MapPoints and asscoiate to keyframes
-    // Step 3 用初始化得到的3D点来生成地图点MapPoints
+    //Step 3 用初始化得到的3D点来生成地图点MapPoints
     //  mvIniMatches[i] 表示初始化两帧特征点匹配关系。
     //  具体解释：i表示帧1中关键点的索引值，vMatches12[i]的值为帧2的关键点索引值,没有匹配关系的话，vMatches12[i]值为 -1
     for(size_t i=0; i<mvIniMatches.size();i++)
@@ -1007,13 +1007,13 @@ void Tracking::CreateInitialMapMonocular()
         // 用三角化点初始化为空间点的世界坐标
         cv::Mat worldPos(mvIniP3D[i]);
 
-        // Step 3.1 用3D点构造MapPoint
+        //Step 3.1 用3D点构造MapPoint
         MapPoint* pMP = new MapPoint(
             worldPos,
             pKFcur, 
             mpMap);
 
-        // Step 3.2 为该MapPoint添加属性：
+        //Step 3.2 为该MapPoint添加属性：
         // a.观测到该MapPoint的关键帧
         // b.该MapPoint的描述子
         // c.该MapPoint的平均观测方向和深度范围
@@ -1042,7 +1042,7 @@ void Tracking::CreateInitialMapMonocular()
     }
 
     // Update Connections
-    // Step 3.3 更新关键帧间的连接关系
+    //Step 3.3 更新关键帧间的连接关系
     // 在3D点和关键帧之间建立边，每个边有一个权重，边的权重是该关键帧与当前帧公共3D点的个数
     pKFini->UpdateConnections();
     pKFcur->UpdateConnections();
@@ -1050,11 +1050,11 @@ void Tracking::CreateInitialMapMonocular()
     // Bundle Adjustment
     cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
 
-    // Step 4 全局BA优化，同时优化所有位姿和三维点
+    //Step 4 全局BA优化，同时优化所有位姿和三维点
     Optimizer::GlobalBundleAdjustemnt(mpMap,20);
 
     // Set median depth to 1
-    // Step 5 取场景的中值深度，用于尺度归一化 
+    //Step 5 取场景的中值深度，用于尺度归一化 
     // 为什么是 pKFini 而不是 pKCur ? 答：都可以的，内部做了位姿变换了
     float medianDepth = pKFini->ComputeSceneMedianDepth(2);
     float invMedianDepth = 1.0f/medianDepth;
@@ -1067,7 +1067,7 @@ void Tracking::CreateInitialMapMonocular()
         return;
     }
 
-    // Step 6 将两帧之间的变换归一化到平均深度1的尺度下
+    //Step 6 将两帧之间的变换归一化到平均深度1的尺度下
     // Scale initial baseline
     cv::Mat Tc2w = pKFcur->GetPose();
     // x/z y/z 将z归一化到1 
@@ -1075,7 +1075,7 @@ void Tracking::CreateInitialMapMonocular()
     pKFcur->SetPose(Tc2w);
 
     // Scale points
-    // Step 7 把3D点的尺度也归一化到1
+    //Step 7 把3D点的尺度也归一化到1
     // 为什么是pKFini? 是不是就算是使用 pKFcur 得到的结果也是相同的? 答：是的，因为是同样的三维点
     vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
     for(size_t iMP=0; iMP<vpAllMapPoints.size(); iMP++)
@@ -1087,7 +1087,7 @@ void Tracking::CreateInitialMapMonocular()
         }
     }
 
-    //  Step 8 将关键帧插入局部地图，更新归一化后的位姿、局部地图点
+    //Step 8 将关键帧插入局部地图，更新归一化后的位姿、局部地图点
     mpLocalMapper->InsertKeyFrame(pKFini);
     mpLocalMapper->InsertKeyFrame(pKFcur);
 
@@ -1417,20 +1417,20 @@ bool Tracking::TrackLocalMap()
     // We retrieve the local map and try to find matches to points in the local map.
 
     // Update Local KeyFrames and Local Points
-    // Step 1：更新局部关键帧 mvpLocalKeyFrames 和局部地图点 mvpLocalMapPoints
+    //Step 1：更新局部关键帧 mvpLocalKeyFrames 和局部地图点 mvpLocalMapPoints
     UpdateLocalMap();
 
-    // Step 2：筛选局部地图中新增的在视野范围内的地图点，投影到当前帧搜索匹配，得到更多的匹配关系
+    //Step 2：筛选局部地图中新增的在视野范围内的地图点，投影到当前帧搜索匹配，得到更多的匹配关系
     SearchLocalPoints();
 
     // Optimize Pose
     // 在这个函数之前，在 Relocalization、TrackReferenceKeyFrame、TrackWithMotionModel 中都有位姿优化，
-    // Step 3：前面新增了更多的匹配关系，BA优化得到更准确的位姿
+    //Step 3：前面新增了更多的匹配关系，BA优化得到更准确的位姿
     Optimizer::PoseOptimization(&mCurrentFrame);
     mnMatchesInliers = 0;
 
     // Update MapPoints Statistics
-    // Step 4：更新当前帧的地图点被观测程度，并统计跟踪局部地图后匹配数目
+    //Step 4：更新当前帧的地图点被观测程度，并统计跟踪局部地图后匹配数目
     for(int i=0; i<mCurrentFrame.N; i++)
     {
         if(mCurrentFrame.mvpMapPoints[i])
@@ -1462,7 +1462,7 @@ bool Tracking::TrackLocalMap()
 
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently
-    // Step 5：根据跟踪匹配数目及重定位情况决定是否跟踪成功
+    //Step 5：根据跟踪匹配数目及重定位情况决定是否跟踪成功
     // 如果最近刚刚发生了重定位,那么至少成功匹配50个点才认为是成功跟踪
     if(mCurrentFrame.mnId<mnLastRelocFrameId+mMaxFrames && mnMatchesInliers<50)
         return false;
@@ -1731,7 +1731,7 @@ void Tracking::CreateNewKeyFrame()
 void Tracking::SearchLocalPoints()
 {
     // Do not search map points already matched
-    // Step 1：遍历当前帧的地图点，标记这些地图点不参与之后的投影搜索匹配
+    //Step 1：遍历当前帧的地图点，标记这些地图点不参与之后的投影搜索匹配
     for(vector<MapPoint*>::iterator vit=mCurrentFrame.mvpMapPoints.begin(), vend=mCurrentFrame.mvpMapPoints.end(); vit!=vend; vit++)
     {
         MapPoint* pMP = *vit;
@@ -1757,7 +1757,7 @@ void Tracking::SearchLocalPoints()
     int nToMatch=0;
 
     // Project points in frame and check its visibility
-    // Step 2：判断所有局部地图点中除当前帧地图点外的点，是否在当前帧视野范围内
+    //Step 2：判断所有局部地图点中除当前帧地图点外的点，是否在当前帧视野范围内
     for(vector<MapPoint*>::iterator vit=mvpLocalMapPoints.begin(), vend=mvpLocalMapPoints.end(); vit!=vend; vit++)
     {
         MapPoint* pMP = *vit;
@@ -1780,7 +1780,7 @@ void Tracking::SearchLocalPoints()
         }
     }
 
-    // Step 3：如果需要进行投影匹配的点的数目大于0，就进行投影匹配，增加更多的匹配关系
+    //Step 3：如果需要进行投影匹配的点的数目大于0，就进行投影匹配，增加更多的匹配关系
     if(nToMatch>0)
     {
         ORBmatcher matcher(0.8);
@@ -1822,10 +1822,10 @@ void Tracking::UpdateLocalMap()
  */
 void Tracking::UpdateLocalPoints()
 {
-    // Step 1：清空局部地图点
+    //Step 1：清空局部地图点
     mvpLocalMapPoints.clear();
 
-    // Step 2：遍历局部关键帧 mvpLocalKeyFrames
+    //Step 2：遍历局部关键帧 mvpLocalKeyFrames
     for(vector<KeyFrame*>::const_iterator itKF=mvpLocalKeyFrames.begin(), itEndKF=mvpLocalKeyFrames.end(); itKF!=itEndKF; itKF++)
     {
         KeyFrame* pKF = *itKF;
@@ -1863,7 +1863,7 @@ void Tracking::UpdateLocalPoints()
 void Tracking::UpdateLocalKeyFrames()
 {
     // Each map point vote for the keyframes in which it has been observed
-    // Step 1：遍历当前帧的地图点，记录所有能观测到当前帧地图点的关键帧
+    //Step 1：遍历当前帧的地图点，记录所有能观测到当前帧地图点的关键帧
     map<KeyFrame*,int> keyframeCounter;
     for(int i=0; i<mCurrentFrame.N; i++)
     {
@@ -1897,14 +1897,14 @@ void Tracking::UpdateLocalKeyFrames()
     int max=0;
     KeyFrame* pKFmax= static_cast<KeyFrame*>(NULL);
 
-    // Step 2：更新局部关键帧（mvpLocalKeyFrames），添加局部关键帧有3种类型
+    //Step 2：更新局部关键帧（mvpLocalKeyFrames），添加局部关键帧有3种类型
     // 先清空局部关键帧
     mvpLocalKeyFrames.clear();
     // 先申请3倍内存，不够后面再加
     mvpLocalKeyFrames.reserve(3*keyframeCounter.size());
 
     // All keyframes that observe a map point are included in the local map. Also check which keyframe shares most points
-    // Step 2.1 类型1：能观测到当前帧地图点的关键帧作为局部关键帧 （将邻居拉拢入伙）（一级共视关键帧） 
+    //Step 2.1 类型1：能观测到当前帧地图点的关键帧作为局部关键帧 （将邻居拉拢入伙）（一级共视关键帧） 
     for(map<KeyFrame*,int>::const_iterator it=keyframeCounter.begin(), itEnd=keyframeCounter.end(); it!=itEnd; it++)
     {
         KeyFrame* pKF = it->first;
@@ -1930,7 +1930,7 @@ void Tracking::UpdateLocalKeyFrames()
 
 
     // Include also some not-already-included keyframes that are neighbors to already-included keyframes
-    // Step 2.2 遍历一级共视关键帧，寻找更多的局部关键帧 
+    //Step 2.2 遍历一级共视关键帧，寻找更多的局部关键帧 
     for(vector<KeyFrame*>::const_iterator itKF=mvpLocalKeyFrames.begin(), itEndKF=mvpLocalKeyFrames.end(); itKF!=itEndKF; itKF++)
     {
         // Limit the number of keyframes

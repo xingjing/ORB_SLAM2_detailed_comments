@@ -491,7 +491,7 @@ bool MapPoint::IsInKeyFrame(KeyFrame *pKF)
  */
 void MapPoint::UpdateNormalAndDepth()
 {
-    // Step 1 获得观测到该地图点的所有关键帧、坐标等信息
+    //Step 1 获得观测到该地图点的所有关键帧、坐标等信息
     map<KeyFrame*,size_t> observations;
     KeyFrame* pRefKF;
     cv::Mat Pos;
@@ -509,7 +509,7 @@ void MapPoint::UpdateNormalAndDepth()
     if(observations.empty())
         return;
 
-    // Step 2 计算该地图点的平均观测方向
+    //Step 2 计算该地图点的平均观测方向
     // 能观测到该地图点的所有关键帧，对该点的观测方向归一化为单位向量，然后进行求和得到该地图点的朝向
     // 初始值为0向量，累加为归一化向量，最后除以总数n
     cv::Mat normal = cv::Mat::zeros(3,1,CV_32F);

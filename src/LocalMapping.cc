@@ -303,7 +303,7 @@ void LocalMapping::CreateNewMapPoints()
     if(mbMonocular)
         nn=20;
 
-    // Step 1：在当前关键帧的共视关键帧中找到共视程度最高的nn帧相邻关键帧
+    //Step 1：在当前关键帧的共视关键帧中找到共视程度最高的nn帧相邻关键帧
     const vector<KeyFrame*> vpNeighKFs = mpCurrentKeyFrame->GetBestCovisibilityKeyFrames(nn);
 
     // 特征点匹配配置 最佳距离 < 0.6*次佳距离，比较苛刻了。不检查旋转
@@ -334,7 +334,7 @@ void LocalMapping::CreateNewMapPoints()
     int nnew=0;
 
     // Search matches with epipolar restriction and triangulate
-    // Step 2：遍历相邻关键帧，搜索匹配并用极线约束剔除误匹配，最终三角化
+    //Step 2：遍历相邻关键帧，搜索匹配并用极线约束剔除误匹配，最终三角化
     for(size_t i=0; i<vpNeighKFs.size(); i++)
     {
         // ! 疑似bug，正确应该是 if(i>0 && !CheckNewKeyFrames())
@@ -351,7 +351,7 @@ void LocalMapping::CreateNewMapPoints()
         // 基线长度
         const float baseline = cv::norm(vBaseline);
 
-        // Step 3：判断相机运动的基线是不是足够长
+        //Step 3：判断相机运动的基线是不是足够长
         if(!mbMonocular)
         {
             // 如果是双目相机，关键帧间距小于本身的基线时不生成3D点
@@ -372,11 +372,11 @@ void LocalMapping::CreateNewMapPoints()
         }
 
         // Compute Fundamental Matrix
-        // Step 4：根据两个关键帧的位姿计算它们之间的基础矩阵
+        //Step 4：根据两个关键帧的位姿计算它们之间的基础矩阵
         cv::Mat F12 = ComputeF12(mpCurrentKeyFrame,pKF2);
 
         // Search matches that fullfil epipolar constraint
-        // Step 5：通过词袋对两关键帧的未匹配的特征点快速匹配，用极线约束抑制离群点，生成新的匹配点对
+        //Step 5：通过词袋对两关键帧的未匹配的特征点快速匹配，用极线约束抑制离群点，生成新的匹配点对
         vector<pair<size_t,size_t> > vMatchedIndices;
         matcher.SearchForTriangulation(mpCurrentKeyFrame,pKF2,F12,vMatchedIndices,false);
 
@@ -395,11 +395,11 @@ void LocalMapping::CreateNewMapPoints()
         const float &invfy2 = pKF2->invfy;
 
         // Triangulate each match
-        // Step 6：对每对匹配通过三角化生成3D点,和 Triangulate函数差不多
+        //Step 6：对每对匹配通过三角化生成3D点,和 Triangulate函数差不多
         const int nmatches = vMatchedIndices.size();
         for(int ikp=0; ikp<nmatches; ikp++)
         {
-            // Step 6.1：取出匹配特征点
+            //Step 6.1：取出匹配特征点
 
             // 当前匹配对在当前关键帧中的索引
             const int &idx1 = vMatchedIndices[ikp].first;

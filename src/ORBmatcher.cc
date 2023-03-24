@@ -76,7 +76,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
     // 如果 th！=1 (RGBD 相机或者刚刚进行过重定位), 需要扩大范围搜索
     const bool bFactor = th!=1.0;
 
-    // Step 1 遍历有效的局部地图点
+    //Step 1 遍历有效的局部地图点
     for(size_t iMP=0; iMP<vpMapPoints.size(); iMP++)
     {
         MapPoint* pMP = vpMapPoints[iMP];
@@ -92,14 +92,14 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
         const int &nPredictedLevel = pMP->mnTrackScaleLevel;
 
         // The size of the window will depend on the viewing direction
-        // Step 2 设定搜索搜索窗口的大小。取决于视角, 若当前视角和平均视角夹角较小时, r取一个较小的值
+        //Step 2 设定搜索搜索窗口的大小。取决于视角, 若当前视角和平均视角夹角较小时, r取一个较小的值
         float r = RadiusByViewingCos(pMP->mTrackViewCos);
         
         // 如果需要扩大范围搜索，则乘以阈值th
         if(bFactor)
             r*=th;
 
-        // Step 3 通过投影点以及搜索窗口和预测的尺度进行搜索, 找出搜索半径内的候选匹配点索引
+        //Step 3 通过投影点以及搜索窗口和预测的尺度进行搜索, 找出搜索半径内的候选匹配点索引
         const vector<size_t> vIndices =
                 F.GetFeaturesInArea(pMP->mTrackProjX,pMP->mTrackProjY,      // 该地图点投影到一帧上的坐标
                                     r*F.mvScaleFactors[nPredictedLevel],    // 认为搜索窗口的大小和该特征点被追踪到时所处的尺度也有关系
@@ -119,7 +119,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
         int bestIdx =-1 ;
 
         // Get best and second matches with near keypoints
-        // Step 4 寻找候选匹配点中的最佳和次佳匹配点
+        //Step 4 寻找候选匹配点中的最佳和次佳匹配点
         for(vector<size_t>::const_iterator vit=vIndices.begin(), vend=vIndices.end(); vit!=vend; vit++)
         {
             const size_t idx = *vit;
@@ -164,7 +164,7 @@ int ORBmatcher::SearchByProjection(Frame &F, const vector<MapPoint*> &vpMapPoint
         }
 
         // Apply ratio to second match (only if best and second are in the same scale level)
-        // Step 5 筛选最佳匹配点
+        //Step 5 筛选最佳匹配点
         // 最佳匹配距离还需要满足在设定阈值内
         if(bestDist<=TH_HIGH)
         {
@@ -1127,7 +1127,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
     {
         
         MapPoint* pMP = vpMapPoints[i];
-        // Step 1 判断地图点的有效性 
+        //Step 1 判断地图点的有效性 
         if(!pMP)
             continue;
         // 地图点无效 或 已经是该帧的地图点（无需融合），跳过
@@ -1143,7 +1143,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
         if(p3Dc.at<float>(2)<0.0f)
             continue;
 
-        // Step 2 得到地图点投影到关键帧的图像坐标
+        //Step 2 得到地图点投影到关键帧的图像坐标
         const float invz = 1/p3Dc.at<float>(2);
         const float x = p3Dc.at<float>(0)*invz;
         const float y = p3Dc.at<float>(1)*invz;
@@ -1164,12 +1164,12 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
         const float dist3D = cv::norm(PO);
 
         // Depth must be inside the scale pyramid of the image
-        // Step 3 地图点到关键帧相机光心距离需满足在有效范围内
+        //Step 3 地图点到关键帧相机光心距离需满足在有效范围内
         if(dist3D<minDistance || dist3D>maxDistance )
             continue;
 
         // Viewing angle must be less than 60 deg
-        // Step 4 地图点到光心的连线与该地图点的平均观测向量之间夹角要小于60°
+        //Step 4 地图点到光心的连线与该地图点的平均观测向量之间夹角要小于60°
         cv::Mat Pn = pMP->GetNormal();
         if(PO.dot(Pn)<0.5*dist3D)
             continue;
@@ -1179,14 +1179,14 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
         // Search in a radius
         // 确定搜索范围
         const float radius = th*pKF->mvScaleFactors[nPredictedLevel];
-        // Step 5 在投影点附近搜索窗口内找到候选匹配点的索引
+        //Step 5 在投影点附近搜索窗口内找到候选匹配点的索引
         const vector<size_t> vIndices = pKF->GetFeaturesInArea(u,v,radius);
 
         if(vIndices.empty())
             continue;
 
         // Match to the most similar keypoint in the radius
-         // Step 6 遍历寻找最佳匹配点
+         //Step 6 遍历寻找最佳匹配点
         const cv::Mat dMP = pMP->GetDescriptor();
 
         int bestDist = 256;
@@ -1247,7 +1247,7 @@ int ORBmatcher::Fuse(KeyFrame *pKF, const vector<MapPoint *> &vpMapPoints, const
         }
 
         // If there is already a MapPoint replace otherwise add new measurement
-        // Step 7 找到投影点对应的最佳匹配特征点，根据是否存在地图点来融合或新增
+        //Step 7 找到投影点对应的最佳匹配特征点，根据是否存在地图点来融合或新增
         // 最佳匹配距离要小于阈值
         if(bestDist<=TH_LOW)
         {
