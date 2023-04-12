@@ -362,7 +362,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
 {
     // 该优化函数主要用于Tracking线程中：运动跟踪、参考帧跟踪、地图跟踪、重定位
 
-    // Step 1：构造g2o优化器, BlockSolver_6_3表示：位姿 _PoseDim 为6维，路标点 _LandmarkDim 是3维
+    //Step 1：构造g2o优化器, BlockSolver_6_3表示：位姿 _PoseDim 为6维，路标点 _LandmarkDim 是3维
     g2o::SparseOptimizer optimizer;
     g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
 
@@ -377,7 +377,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
     int nInitialCorrespondences=0;
 
     // Set Frame vertex
-    // Step 2：添加顶点：待优化当前帧的Tcw
+    //Step 2：添加顶点：待优化当前帧的Tcw
     g2o::VertexSE3Expmap * vSE3 = new g2o::VertexSE3Expmap();
     vSE3->setEstimate(Converter::toSE3Quat(pFrame->mTcw));
      // 设置id
@@ -406,7 +406,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
     // 自由度为3的卡方分布，显著性水平为0.05，对应的临界阈值7.815   
     const float deltaStereo = sqrt(7.815);     
 
-    // Step 3：添加一元边
+    //Step 3：添加一元边
     {
     // 锁定地图点。由于需要使用地图点来构造顶点和边,因此不希望在构造的过程中部分地图点被改写造成不一致甚至是段错误
     unique_lock<mutex> lock(MapPoint::mGlobalMutex);
@@ -466,8 +466,8 @@ int Optimizer::PoseOptimization(Frame *pFrame)
                 //SET EDGE
                 // 观测多了一项右目的坐标
                 Eigen::Matrix<double,3,1> obs;// 这里和单目不同
-                const cv::KeyPoint &kpUn = pFrame->mvKeysUn[i];
-                const float &kp_ur = pFrame->mvuRight[i];
+                const cv::KeyPoint &kpUn = pFrame->mvKeysUn[i];///校正mvKeys后的特征点
+                const float &kp_ur = pFrame->mvuRight[i];//存储左目像素点在右目中的对应点的横坐标 （因为纵坐标是一样的）
                 obs << kpUn.pt.x, kpUn.pt.y, kp_ur;// 这里和单目不同
                 // 新建边，一元边，误差为观测特征点坐标减去投影点的坐标
                 g2o::EdgeStereoSE3ProjectXYZOnlyPose* e = new g2o::EdgeStereoSE3ProjectXYZOnlyPose();// 这里和单目不同
@@ -488,7 +488,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
                 e->cx = pFrame->cx;
                 e->cy = pFrame->cy;
                 e->bf = pFrame->mbf;
-                cv::Mat Xw = pMP->GetWorldPos();
+                cv::Mat Xw = pMP->GetWorldPos();///< MapPoint在世界坐标系下的坐标
                 e->Xw[0] = Xw.at<float>(0);
                 e->Xw[1] = Xw.at<float>(1);
                 e->Xw[2] = Xw.at<float>(2);
@@ -636,7 +636,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     // 局部关键帧
     list<KeyFrame*> lLocalKeyFrames;
 
-    // Step 1 将当前关键帧及其共视关键帧加入局部关键帧
+    //Step 1 将当前关键帧及其共视关键帧加入局部关键帧
     lLocalKeyFrames.push_back(pKF);
     pKF->mnBALocalForKF = pKF->mnId;
 
@@ -655,7 +655,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
 
     // Local MapPoints seen in Local KeyFrames
-    // Step 2 遍历局部关键帧中(一级相连)关键帧，将它们观测的地图点加入到局部地图点
+    //Step 2 遍历局部关键帧中(一级相连)关键帧，将它们观测的地图点加入到局部地图点
     list<MapPoint*> lLocalMapPoints;
     // 遍历局部关键帧中的每一个关键帧
     for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin() , lend=lLocalKeyFrames.end(); lit!=lend; lit++)
@@ -681,7 +681,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     } // 遍历 lLocalKeyFrames 中的每一个关键帧
 
     // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
-    // Step 3 得到能被局部地图点观测到，但不属于局部关键帧的关键帧(二级相连)，这些二级相连关键帧在局部BA优化时不优化
+    //Step 3 得到能被局部地图点观测到，但不属于局部关键帧的关键帧(二级相连)，这些二级相连关键帧在局部BA优化时不优化
     list<KeyFrame*> lFixedCameras;
     // 遍历局部地图中的每个地图点
     for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
@@ -706,7 +706,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
 
     // Setup optimizer
-    // Step 4 构造g2o优化器
+    //Step 4 构造g2o优化器
     g2o::SparseOptimizer optimizer;
     g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
 
@@ -726,7 +726,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     unsigned long maxKFid = 0;
 
     // Set Local KeyFrame vertices
-    // Step 5 添加待优化的位姿顶点：局部关键帧的位姿
+    //Step 5 添加待优化的位姿顶点：局部关键帧的位姿
     for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
         KeyFrame* pKFi = *lit;
@@ -742,7 +742,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
 
     // Set Fixed KeyFrame vertices
-    // Step  6 添加不优化的位姿顶点：固定关键帧的位姿，注意这里调用了vSE3->setFixed(true)
+    //Step  6 添加不优化的位姿顶点：固定关键帧的位姿，注意这里调用了vSE3->setFixed(true)
     // 不优化为啥也要添加？回答：为了增加约束信息
     for(list<KeyFrame*>::iterator lit=lFixedCameras.begin(), lend=lFixedCameras.end(); lit!=lend; lit++)
     {
@@ -758,7 +758,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
 
     // Set MapPoint vertices
-    // Step  7 添加待优化的局部地图点顶点
+    //Step  7 添加待优化的局部地图点顶点
     // 边的最大数目 = 位姿数目 * 地图点数目
     const int nExpectedSize = (lLocalKeyFrames.size()+lFixedCameras.size())*lLocalMapPoints.size();
 
@@ -804,7 +804,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         const map<KeyFrame*,size_t> observations = pMP->GetObservations();
 
         // Set edges
-        // Step 8 在添加完了一个地图点之后, 对每一对关联的地图点和关键帧构建边
+        //Step 8 在添加完了一个地图点之后, 对每一对关联的地图点和关键帧构建边
         // 遍历所有观测到当前地图点的关键帧
         for(map<KeyFrame*,size_t>::const_iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
         {
@@ -851,6 +851,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
                     // 双目或RGB-D模式和单目模式类似
                     Eigen::Matrix<double,3,1> obs;
                     const float kp_ur = pKFi->mvuRight[mit->second];
+                    // 双目模式的观测多一个右目的横坐标kp_ur
                     obs << kpUn.pt.x, kpUn.pt.y, kp_ur;
 
                     g2o::EdgeStereoSE3ProjectXYZ* e = new g2o::EdgeStereoSE3ProjectXYZ();
