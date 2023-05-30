@@ -183,7 +183,7 @@ bool LocalMapping::CheckNewKeyFrames()
  */
 void LocalMapping::ProcessNewKeyFrame()
 {
-    // Step 1：从缓冲队列中取出一帧关键帧
+    //Step 1：从缓冲队列中取出一帧关键帧
     // 该关键帧队列是Tracking线程向LocalMapping中插入的关键帧组成
     {
         unique_lock<mutex> lock(mMutexNewKFs);
@@ -194,11 +194,11 @@ void LocalMapping::ProcessNewKeyFrame()
     }
 
     // Compute Bags of Words structures
-    // Step 2：计算该关键帧特征点的词袋向量
+    //Step 2：计算该关键帧特征点的词袋向量
     mpCurrentKeyFrame->ComputeBoW();
 
     // Associate MapPoints to the new keyframe and update normal and descriptor
-    // Step 3：当前处理关键帧中有效的地图点，更新normal，描述子等信息
+    //Step 3：当前处理关键帧中有效的地图点，更新normal，描述子等信息
     // TrackLocalMap中和当前帧新匹配上的地图点和当前关键帧进行关联绑定
     const vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
     // 对当前处理的这个关键帧中的所有的地图点展开遍历
@@ -229,11 +229,11 @@ void LocalMapping::ProcessNewKeyFrame()
     }    
 
     // Update links in the Covisibility Graph
-    // Step 4：更新关键帧间的连接关系（共视图）
+    //Step 4：更新关键帧间的连接关系（共视图）
     mpCurrentKeyFrame->UpdateConnections();
 
     // Insert Keyframe in Map
-    // Step 5：将该关键帧插入到地图中
+    //Step 5：将该关键帧插入到地图中
     mpMap->AddKeyFrame(mpCurrentKeyFrame);
 }
 
