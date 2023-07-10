@@ -421,7 +421,7 @@ void KeyFrame::UpdateConnections()
 
     //For all map points in keyframe check in which other keyframes are they seen
     //Increase counter for those keyframes
-    // Step 1 通过地图点被关键帧观测来间接统计关键帧之间的共视程度
+    //Step 1 通过地图点被关键帧观测来间接统计关键帧之间的共视程度
     // 统计每一个地图点都有多少关键帧与当前关键帧存在共视关系，统计结果放在KFcounter
     for(vector<MapPoint*>::iterator vit=vpMP.begin(), vend=vpMP.end(); vit!=vend; vit++)
     {
@@ -465,7 +465,7 @@ void KeyFrame::UpdateConnections()
     // pair<int,KeyFrame*>将关键帧的权重写在前面，关键帧写在后面方便后面排序
     vector<pair<int,KeyFrame*> > vPairs;
     vPairs.reserve(KFcounter.size());
-    // Step 2 找到对应权重最大的关键帧（共视程度最高的关键帧）
+    //Step 2 找到对应权重最大的关键帧（共视程度最高的关键帧）
     for(map<KeyFrame*,int>::iterator mit=KFcounter.begin(), mend=KFcounter.end(); mit!=mend; mit++)
     {
         if(mit->second>nmax)

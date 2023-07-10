@@ -888,7 +888,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         if(*pbStopFlag)
             return;
 
-    // Step 9 分成两个阶段开始优化。
+    //Step 9 分成两个阶段开始优化。
     // 第一阶段优化
     optimizer.initializeOptimization();
     // 迭代5次
@@ -905,7 +905,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     if(bDoMore)
     {
         // Check inlier observations
-        // Step 10 检测outlier，并设置下次不优化
+        //Step 10 检测outlier，并设置下次不优化
         // 遍历所有的单目误差边
         for(size_t i=0, iend=vpEdgesMono.size(); i<iend;i++)
         {
@@ -945,7 +945,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         }
 
         // Optimize again without the outliers
-        // Step 11：排除误差较大的outlier后再次优化 -- 第二阶段优化
+        //Step 11：排除误差较大的outlier后再次优化 -- 第二阶段优化
         optimizer.initializeOptimization(0);
         optimizer.optimize(10);
 
@@ -955,7 +955,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     vToErase.reserve(vpEdgesMono.size()+vpEdgesStereo.size());
 
     // Check inlier observations
-    // Step 12：在优化后重新计算误差，剔除连接误差比较大的关键帧和地图点
+    //Step 12：在优化后重新计算误差，剔除连接误差比较大的关键帧和地图点
     // 对于单目误差边
     for(size_t i=0, iend=vpEdgesMono.size(); i<iend;i++)
     {
@@ -1010,7 +1010,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
 
     // Recover optimized data
-    // Step 13：优化后更新关键帧位姿以及地图点的位置、平均观测方向等属性
+    //Step 13：优化后更新关键帧位姿以及地图点的位置、平均观测方向等属性
 
     //Keyframes
     for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
