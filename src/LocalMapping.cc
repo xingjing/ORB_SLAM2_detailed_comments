@@ -87,22 +87,22 @@ void LocalMapping::Run()
         if(CheckNewKeyFrames())
         {
             // BoW conversion and insertion in Map
-            // Step 2 处理列表中的关键帧，包括计算BoW、更新观测、描述子、共视图，插入到地图等
+            //Step 2 处理列表中的关键帧，包括计算BoW、更新观测、描述子、共视图，插入到地图等
             ProcessNewKeyFrame();
 
             // Check recent MapPoints
-            // Step 3 根据地图点的观测情况剔除质量不好的地图点
+            //Step 3 根据地图点的观测情况剔除质量不好的地图点
             MapPointCulling();
 
             // Triangulate new MapPoints
-            // Step 4 当前关键帧与相邻关键帧通过三角化产生新的地图点，使得跟踪更稳
+            //Step 4 当前关键帧与相邻关键帧通过三角化产生新的地图点，使得跟踪更稳
             CreateNewMapPoints();
 
             // 已经处理完队列中的最后的一个关键帧
             if(!CheckNewKeyFrames())
             {
                 // Find more matches in neighbor keyframes and fuse point duplications
-                //  Step 5 检查并融合当前关键帧与相邻关键帧帧（两级相邻）中重复的地图点
+                //Step 5 检查并融合当前关键帧与相邻关键帧帧（两级相邻）中重复的地图点
                 SearchInNeighbors();
             }
 
@@ -113,18 +113,18 @@ void LocalMapping::Run()
             if(!CheckNewKeyFrames() && !stopRequested())
             {
                 // Local BA
-                // Step 6 当局部地图中的关键帧大于2个的时候进行局部地图的BA
+                //Step 6 当局部地图中的关键帧大于2个的时候进行局部地图的BA
                 if(mpMap->KeyFramesInMap()>2)
                     // 注意这里的第二个参数是按地址传递的,当这里的 mbAbortBA 状态发生变化时，能够及时执行/停止BA
                     Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap);
 
                 // Check redundant local Keyframes
-                // Step 7 检测并剔除当前帧相邻的关键帧中冗余的关键帧
+                //Step 7 检测并剔除当前帧相邻的关键帧中冗余的关键帧
                 // 冗余的判定：该关键帧的90%的地图点可以被其它关键帧观测到
                 KeyFrameCulling();
             }
 
-            // Step 8 将当前帧加入到闭环检测队列中
+            //Step 8 将当前帧加入到闭环检测队列中
             // 注意这里的关键帧被设置成为了bad的情况,这个需要注意
             mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
         }
@@ -873,7 +873,7 @@ void LocalMapping::KeyFrameCulling()
     // scaleLeveli：pKFi的金字塔尺度
     // scaleLevel：pKF的金字塔尺度
 
-    // Step 1：根据共视图提取当前关键帧的所有共视关键帧
+    //Step 1：根据共视图提取当前关键帧的所有共视关键帧
     vector<KeyFrame*> vpLocalKeyFrames = mpCurrentKeyFrame->GetVectorCovisibleKeyFrames();
 
     // 对所有的共视关键帧进行遍历
@@ -883,7 +883,7 @@ void LocalMapping::KeyFrameCulling()
         // 第1个关键帧不能删除，跳过
         if(pKF->mnId==0)
             continue;
-        // Step 2：提取每个共视关键帧的地图点
+        //Step 2：提取每个共视关键帧的地图点
         const vector<MapPoint*> vpMapPoints = pKF->GetMapPointMatches();
 
         // 记录某个点被观测次数，后面并未使用
@@ -895,7 +895,7 @@ void LocalMapping::KeyFrameCulling()
                                                                                       
         int nMPs=0;            
 
-        // Step 3：遍历该共视关键帧的所有地图点，其中能被其它至少3个关键帧观测到的地图点为冗余地图点
+        //Step 3：遍历该共视关键帧的所有地图点，其中能被其它至少3个关键帧观测到的地图点为冗余地图点
         for(size_t i=0, iend=vpMapPoints.size(); i<iend; i++)
         {
             MapPoint* pMP = vpMapPoints[i];
@@ -947,7 +947,7 @@ void LocalMapping::KeyFrameCulling()
             }
         }
 
-        // Step 4：如果该关键帧90%以上的有效地图点被判断为冗余的，则认为该关键帧是冗余的，需要删除该关键帧
+        //Step 4：如果该关键帧90%以上的有效地图点被判断为冗余的，则认为该关键帧是冗余的，需要删除该关键帧
         if(nRedundantObservations>0.9*nMPs)
             pKF->SetBadFlag();
     }
